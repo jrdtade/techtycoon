@@ -144,6 +144,9 @@ export interface AnnualSummary {
 }
 
 export interface FinanceState {
+  /** Accumulates the current week, including money moved by commands between ticks. */
+  thisWeek: Ledger;
+  /** The last completed week. */
   lastWeek: Ledger;
   thisMonth: Ledger;
   reports: MonthlyReport[];

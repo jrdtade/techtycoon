@@ -128,6 +128,22 @@ export const CONFIG = {
     monthsInRedForBankruptcy: 3,
   },
 
+  /** End-of-game score = Σ weight × metric. Balance guess; only used for the summary screen. */
+  score: {
+    perDollarCash: 0.001,
+    perDollarLifetimeRevenue: 0.0005,
+    perReputationPoint: 20,
+    perProductLaunched: 50,
+    bankruptcyMultiplier: 0.5,
+    ranks: [
+      { min: 0, title: 'Garage Tinkerer' },
+      { min: 1_000, title: 'Small Software House' },
+      { min: 5_000, title: 'Regional Player' },
+      { min: 25_000, title: 'Industry Contender' },
+      { min: 100_000, title: 'Valley Titan' },
+    ],
+  },
+
   history: {
     maxLogEntries: 200,
     maxMonthlyReports: 24, // older months are folded into annual summaries

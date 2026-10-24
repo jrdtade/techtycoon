@@ -11,7 +11,7 @@ export function emptyLedger(): Ledger {
 }
 
 export function initialFinance(): FinanceState {
-  return { lastWeek: emptyLedger(), thisMonth: emptyLedger(), reports: [], annual: [], monthsInRed: 0 };
+  return { thisWeek: emptyLedger(), lastWeek: emptyLedger(), thisMonth: emptyLedger(), reports: [], annual: [], monthsInRed: 0 };
 }
 
 export function ledgerIncome(l: Ledger): number {
@@ -28,7 +28,7 @@ export function earn(state: GameState, category: IncomeCategory, amount: number)
   if (amount === 0) return;
   state.company.cash += amount;
   state.company.lifetimeRevenue += amount;
-  state.finance.lastWeek.income[category] += amount;
+  state.finance.thisWeek.income[category] += amount;
   state.finance.thisMonth.income[category] += amount;
 }
 
@@ -36,8 +36,14 @@ export function earn(state: GameState, category: IncomeCategory, amount: number)
 export function spend(state: GameState, category: ExpenseCategory, amount: number): void {
   if (amount === 0) return;
   state.company.cash -= amount;
-  state.finance.lastWeek.expenses[category] += amount;
+  state.finance.thisWeek.expenses[category] += amount;
   state.finance.thisMonth.expenses[category] += amount;
+}
+
+/** Ends the week's ledger: thisWeek becomes lastWeek. */
+export function rollWeek(state: GameState): void {
+  state.finance.lastWeek = state.finance.thisWeek;
+  state.finance.thisWeek = emptyLedger();
 }
 
 /** Weekly running costs: salaries and office rent. */

@@ -20,6 +20,8 @@ interface GameStore {
   lastSeenSeq: number;
   toast: string | null;
   modal: Modal | null;
+  /** The end-of-game summary was closed so the player can look at the final dashboard. */
+  summaryDismissed: boolean;
 
   startNewGame(companyName: string, seed?: number): void;
   loadGame(state: GameState): void;
@@ -32,6 +34,7 @@ interface GameStore {
   openModal(modal: Modal): void;
   closeModal(): void;
   showToast(text: string | null): void;
+  setSummaryDismissed(v: boolean): void;
 }
 
 function randomSeed(): number {
@@ -45,14 +48,15 @@ export const useGame = create<GameStore>((set, get) => ({
   lastSeenSeq: 0,
   toast: null,
   modal: null,
+  summaryDismissed: false,
 
   startNewGame(companyName, seed = randomSeed()) {
     const game = newGame({ companyName, seed });
-    set({ game, speed: 0, lastSeenSeq: game.nextLogSeq - 1, modal: null, toast: null });
+    set({ game, speed: 0, lastSeenSeq: game.nextLogSeq - 1, modal: null, toast: null, summaryDismissed: false });
   },
 
   loadGame(game) {
-    set({ game, speed: 0, lastSeenSeq: game.nextLogSeq - 1, modal: null, toast: null });
+    set({ game, speed: 0, lastSeenSeq: game.nextLogSeq - 1, modal: null, toast: null, summaryDismissed: false });
   },
 
   quitToMenu() {
@@ -103,5 +107,8 @@ export const useGame = create<GameStore>((set, get) => ({
   },
   showToast(toast) {
     set({ toast });
+  },
+  setSummaryDismissed(summaryDismissed) {
+    set({ summaryDismissed });
   },
 }));

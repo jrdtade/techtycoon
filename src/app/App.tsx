@@ -1,6 +1,9 @@
 import { useEffect } from 'react';
 import { ContractsPanel } from './components/ContractsPanel';
 import { EventLog } from './components/EventLog';
+import { FinancePanel } from './components/FinancePanel';
+import { ReportsModal } from './components/ReportsModal';
+import { SummaryScreen } from './components/SummaryScreen';
 import { HireModal } from './components/HireModal';
 import { LaunchModal } from './components/LaunchModal';
 import { NewGameScreen } from './components/NewGameScreen';
@@ -39,6 +42,8 @@ function ActiveModal() {
       return <LaunchModal projectId={modal.projectId} />;
     case 'hire':
       return <HireModal />;
+    case 'reports':
+      return <ReportsModal />;
     default:
       return null;
   }
@@ -61,6 +66,7 @@ export function App() {
             </div>
             <aside className="side-column">
               <StaffPanel />
+              <FinancePanel />
               <EventLog />
             </aside>
           </main>
@@ -69,6 +75,7 @@ export function App() {
         <NewGameScreen />
       )}
       <ActiveModal />
+      {hasGame && <SummaryScreen />}
       <Toast />
     </>
   );

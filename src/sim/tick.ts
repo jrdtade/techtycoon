@@ -3,7 +3,7 @@ import { Rng } from './rng';
 import { advanceContracts, refreshContractOffers } from './systems/contracts';
 import { advanceProjects } from './systems/development';
 import { checkMilestones, runScheduledEvents } from './systems/events';
-import { closeMonth, emptyLedger, payWeeklyCosts } from './systems/finance';
+import { closeMonth, payWeeklyCosts, rollWeek } from './systems/finance';
 import { simulateSales } from './systems/market';
 import { refreshCandidates } from './systems/staff';
 import { driftReputation } from './systems/reputation';
@@ -20,8 +20,6 @@ export function step(prev: GameState): GameState {
   const rng = new Rng(state.rng);
   const infl = inflation(fractionalYear(state.week));
 
-  state.finance.lastWeek = emptyLedger();
-
   // 1. this week's work and sales
   advanceProjects(state);
   advanceContracts(state);
@@ -30,6 +28,7 @@ export function step(prev: GameState): GameState {
   driftReputation(state);
 
   // 2. advance the calendar
+  rollWeek(state);
   state.week += 1;
   if (isMonthStart(state.week)) {
     closeMonth(state);
