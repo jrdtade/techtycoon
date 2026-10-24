@@ -5,6 +5,7 @@ import { advanceProjects } from './systems/development';
 import { checkMilestones, runScheduledEvents } from './systems/events';
 import { closeMonth, emptyLedger, payWeeklyCosts } from './systems/finance';
 import { simulateSales } from './systems/market';
+import { refreshCandidates } from './systems/staff';
 import { driftReputation } from './systems/reputation';
 import type { GameState } from './types';
 import { addLog, cloneState, inflation } from './util';
@@ -51,8 +52,9 @@ export function step(prev: GameState): GameState {
   return state;
 }
 
-/** Things that change once a month: new contract offers. */
+/** Things that change once a month: job candidates and contract offers. */
 export function monthlyRefresh(state: GameState, rng: Rng): void {
+  refreshCandidates(state, rng);
   refreshContractOffers(state, rng);
 }
 

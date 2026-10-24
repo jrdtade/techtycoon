@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { ContractsPanel } from './components/ContractsPanel';
 import { EventLog } from './components/EventLog';
+import { HireModal } from './components/HireModal';
 import { LaunchModal } from './components/LaunchModal';
 import { NewGameScreen } from './components/NewGameScreen';
 import { NewProjectModal } from './components/NewProjectModal';
@@ -36,6 +37,8 @@ function ActiveModal() {
       return <NewProjectModal />;
     case 'launch':
       return <LaunchModal projectId={modal.projectId} />;
+    case 'hire':
+      return <HireModal />;
     default:
       return null;
   }

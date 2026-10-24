@@ -1,11 +1,13 @@
 import { CONFIG, SCOPES } from './config';
 import { getProductType, getSegment, isProductTypeAvailable, isSegmentOpen } from './content';
 import { failContract } from './systems/contracts';
+import { spend } from './systems/finance';
+import { hireFee, severance } from './systems/staff';
 import { workRequiredFor } from './systems/development';
 import { computeQuality, retireProduct } from './systems/market';
 import { changeReputation } from './systems/reputation';
 import type { Command, DispatchResult, Employee, Focus, GameState, Id } from './types';
-import { addLog, cloneState, newId } from './util';
+import { addLog, cloneState, fmtMoney, newId } from './util';
 
 const MAX_NAME = 40;
 
@@ -172,6 +174,43 @@ const handlers: { [K in Command['type']]?: Handler<Extract<Command, { type: K }>
     state.contracts.push({ ...offer, employeeIds: [...cmd.employeeIds], weeksLeft: offer.weeks, startedWeek: state.week });
     for (const e of team) e.contractId = offer.id;
     addLog(state, 'contract', `Contract signed: ${offer.job} for ${offer.client}, ${offer.weeks} weeks.`);
+    return null;
+  },
+
+  hireEmployee(state, cmd) {
+    const c = state.candidates.find((x) => x.id === cmd.candidateId);
+    if (!c) return 'That candidate is no longer available.';
+    const fee = hireFee(c.salary);
+    if (state.company.cash < fee) return `You need ${fmtMoney(fee)} for the recruiting fee.`;
+    spend(state, 'hiring', fee);
+    state.candidates = state.candidates.filter((x) => x.id !== c.id);
+    state.employees.push({
+      id: newId(state, 'emp'),
+      name: c.name,
+      salary: c.salary,
+      hiredWeek: state.week,
+      isFounder: false,
+      skills: { ...c.skills },
+      weeksWorked: 0,
+      projectId: null,
+      contractId: null,
+    });
+    state.stats.peakEmployees = Math.max(state.stats.peakEmployees, state.employees.length);
+    addLog(state, 'staff', `${c.name} joins as a ${c.role.toLowerCase()} on ${fmtMoney(c.salary)} a year.`);
+    return null;
+  },
+
+  fireEmployee(state, cmd) {
+    const e = state.employees.find((x) => x.id === cmd.employeeId);
+    if (!e) return 'No such employee.';
+    if (e.isFounder) return 'You cannot fire yourself.';
+    if (e.contractId) {
+      const contract = state.contracts.find((c) => c.id === e.contractId);
+      if (contract) failContract(state, contract, `${e.name} left the company`);
+    }
+    spend(state, 'severance', severance(e.salary));
+    state.employees = state.employees.filter((x) => x.id !== e.id);
+    addLog(state, 'staff', `${e.name} is let go with ${CONFIG.staff.severanceWeeks} weeks' severance.`);
     return null;
   },
 

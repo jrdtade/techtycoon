@@ -154,3 +154,9 @@ label.check { flex-direction: row; align-items: center; gap: 6px; font-weight: 4
 .segmented button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
 .slider { display: grid; grid-template-columns: 1fr 140px 30px; align-items: center; gap: 8px; font-weight: 400; flex-direction: row; }
 .estimate { background: #f6f7f9; border-radius: var(--radius); padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+
+/* staff */
+.staff-table td { vertical-align: top; }
+.skill { position: relative; display: inline-block; width: 52px; height: 16px; background: #eef0f4; border-radius: 3px; overflow: hidden; }
+.skill-fill { position: absolute; inset: 0 auto 0 0; background: #b9cdf3; }
+.skill-num { position: relative; font-size: 11px; padding-left: 4px; line-height: 16px; font-variant-numeric: tabular-nums; }
