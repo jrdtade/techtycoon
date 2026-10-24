@@ -87,7 +87,7 @@ export function segmentOpenYear(segmentId: SegmentId): number {
 /** Appeal of "everyone else" selling in this category. Phase 2 competitors replace this term. */
 export function baselineAppeal(segmentId: SegmentId, week: Week): number {
   const years = Math.max(0, fractionalYear(week) - segmentOpenYear(segmentId));
-  return M.baselineAppeal * Math.pow(1 + M.baselineAppealGrowthPerYear, years);
+  return getSegment(segmentId).baselineAppeal * Math.pow(1 + M.baselineAppealGrowthPerYear, years);
 }
 
 export function priceFactor(segmentId: SegmentId, price: number): number {
@@ -189,4 +189,29 @@ export function retireProduct(state: GameState, p: Product, message: string): vo
   p.unitCarry = 0;
   p.recentWeeklyUnits = [];
   addLog(state, 'product', message);
+}
+
+export interface LaunchPreview extends QualityResult {
+  /** Expected units per week at full lifecycle (a few weeks after launch). */
+  weeklyUnits: number;
+  weeklyRevenue: number;
+  weeklyProfit: number;
+}
+
+/** What launching a finished project at this price and marketing would look like. Pure. */
+export function previewLaunch(state: GameState, projectId: string, price: number, marketingWeekly: number): LaunchPreview | null {
+  const project = state.projects.find((p) => p.id === projectId);
+  if (!project) return null;
+  const q = computeQuality(project, state.week);
+  const ramped = state.week - M.launchRampWeeks + 1; // pretend the launch ramp is complete
+  const probe: Product = {
+    id: '__preview__', name: project.name, productTypeId: project.productTypeId, segmentId: project.segmentId,
+    launchWeek: ramped, price: Math.max(1, price), marketingWeekly: Math.max(0, marketingWeekly),
+    quality: q.quality, reviewScore: q.reviewScore, bugs: project.bugs, unitsSold: 0, revenue: 0, unitCarry: 0,
+    recentWeeklyUnits: [], status: 'onSale', retiredWeek: null,
+  };
+  const units = expectedWeeklyUnits({ ...state, products: [...state.products, probe] }).get(probe.id) ?? 0;
+  const revenue = units * probe.price;
+  const profit = revenue - units * getSegment(project.segmentId).unitCost - probe.marketingWeekly;
+  return { ...q, weeklyUnits: units, weeklyRevenue: revenue, weeklyProfit: profit };
 }

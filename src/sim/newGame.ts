@@ -1,7 +1,8 @@
 import { CONFIG } from './config';
-import { seedRng } from './rng';
+import { Rng, seedRng } from './rng';
 import { initialFinance } from './systems/finance';
 import { runScheduledEvents } from './systems/events';
+import { monthlyRefresh } from './tick';
 import type { GameState } from './types';
 import { addLog, newId } from './util';
 
@@ -65,6 +66,7 @@ export function newGame(opts: NewGameOptions): GameState {
   });
 
   runScheduledEvents(state);
+  monthlyRefresh(state, new Rng(state.rng));
   addLog(state, 'info', `${state.company.name} is founded in a garage in Palo Verde. The year is 1970.`);
   return state;
 }

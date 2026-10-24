@@ -17,5 +17,9 @@ export {
   expectedWeeklyUnits,
   baselineAppeal,
   priceFactor,
+  previewLaunch,
+  lifecycleFactor,
 } from './systems/market';
+export type { LaunchPreview, AppealBreakdown } from './systems/market';
+export { focusShares, teamProgress, weeksRemaining, workRequiredFor, projectTeam } from './systems/development';
 export { ledgerIncome, ledgerExpenses } from './systems/finance';

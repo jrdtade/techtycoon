@@ -62,9 +62,7 @@ export const CONFIG = {
   },
 
   market: {
-    /** Appeal of "everyone else" in a category. Phase 2 replaces this with real competitors. */
-    baselineAppeal: 2.5,
-    /** Baseline grows as categories mature: × (1 + growth)^(years since segment opened). */
+    /** The "everyone else" baseline appeal is per segment (src/data/segments.ts). It grows as categories mature: × (1 + growth)^(years since segment opened). */
     baselineAppealGrowthPerYear: 0.04,
     qualityExponent: 1.5,
     priceFactorMin: 0.05,
@@ -77,7 +75,7 @@ export const CONFIG = {
     /** Uniform weekly noise on expected units: × (1 ± salesNoise). */
     salesNoise: 0.1,
     /** Products are auto-retired once their lifecycle factor drops below this. */
-    autoRetireLifecycle: 0.03,
+    autoRetireLifecycle: 0.05,
   },
 
   reputation: {
@@ -87,6 +85,9 @@ export const CONFIG = {
     launchDeltaPerPoint: 4,
     /** Weekly drift toward the target set by products on sale. */
     driftPerWeek: 0.01,
+    /** Drift target = (average review − targetReviewOffset) × targetPerReviewPoint. A 6.9 review → ~41, 9 → 70. */
+    targetReviewOffset: 4,
+    targetPerReviewPoint: 14,
     /** Target when nothing is on sale. */
     idleTarget: 10,
     contractCompleted: 0.5,

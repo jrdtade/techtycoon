@@ -1,5 +1,7 @@
 import { END_WEEK, fractionalYear, isMonthStart } from './calendar';
 import { Rng } from './rng';
+import { advanceContracts, refreshContractOffers } from './systems/contracts';
+import { advanceProjects } from './systems/development';
 import { checkMilestones, runScheduledEvents } from './systems/events';
 import { closeMonth, emptyLedger, payWeeklyCosts } from './systems/finance';
 import { simulateSales } from './systems/market';
@@ -20,6 +22,8 @@ export function step(prev: GameState): GameState {
   state.finance.lastWeek = emptyLedger();
 
   // 1. this week's work and sales
+  advanceProjects(state);
+  advanceContracts(state);
   simulateSales(state, rng);
   payWeeklyCosts(state, infl);
   driftReputation(state);
@@ -28,6 +32,7 @@ export function step(prev: GameState): GameState {
   state.week += 1;
   if (isMonthStart(state.week)) {
     closeMonth(state);
+    if (state.status === 'playing') monthlyRefresh(state, rng);
   }
 
   // 3. scheduled history and milestones
@@ -44,6 +49,11 @@ export function step(prev: GameState): GameState {
     addLog(state, 'info', 'The year 1985 draws to a close. Time to look back on what you built.', true);
   }
   return state;
+}
+
+/** Things that change once a month: new contract offers. */
+export function monthlyRefresh(state: GameState, rng: Rng): void {
+  refreshContractOffers(state, rng);
 }
 
 /** Runs `weeks` ticks (stops early if the game ends). */

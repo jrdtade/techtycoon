@@ -43,6 +43,8 @@ export interface SegmentDef {
   priceElasticity: number;
   /** Media, manuals and distribution cost per unit sold. */
   unitCost: number;
+  /** Appeal of everyone else selling in each category here (1970s crowds vs 1980s gold rush). Phase 2 competitors replace it. */
+  baselineAppeal: number;
   /** Weekly marketing spend at which marketing has a "typical" effect. */
   marketingReference: number;
   /** Product lifecycle decay constant in weeks (appeal × e^(-age/lifeWeeks)). */

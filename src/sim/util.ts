@@ -37,3 +37,9 @@ export function roundTo(x: number, step: number): number {
 export function inflation(year: number): number {
   return Math.pow(1 + CONFIG.economy.wageInflationPerYear, year - CONFIG.start.year);
 }
+
+/** Locale-independent "$12,345" formatting for log messages. */
+export function fmtMoney(n: number): string {
+  const s = Math.round(Math.abs(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return `${n < 0 ? '-' : ''}$${s}`;
+}

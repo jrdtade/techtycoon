@@ -1,6 +1,12 @@
 import { useEffect } from 'react';
+import { ContractsPanel } from './components/ContractsPanel';
 import { EventLog } from './components/EventLog';
+import { LaunchModal } from './components/LaunchModal';
 import { NewGameScreen } from './components/NewGameScreen';
+import { NewProjectModal } from './components/NewProjectModal';
+import { ProductsPanel } from './components/ProductsPanel';
+import { ProjectsPanel } from './components/ProjectsPanel';
+import { StaffPanel } from './components/StaffPanel';
 import { TopBar } from './components/TopBar';
 import { startGameLoop } from './gameLoop';
 import { useGame } from './store';
@@ -21,6 +27,20 @@ function Toast() {
   );
 }
 
+function ActiveModal() {
+  const modal = useGame((s) => s.modal);
+  const hasGame = useGame((s) => s.game !== null);
+  if (!modal || !hasGame) return null;
+  switch (modal.kind) {
+    case 'newProject':
+      return <NewProjectModal />;
+    case 'launch':
+      return <LaunchModal projectId={modal.projectId} />;
+    default:
+      return null;
+  }
+}
+
 export function App() {
   const hasGame = useGame((s) => s.game !== null);
   useEffect(() => startGameLoop(), []);
@@ -31,8 +51,13 @@ export function App() {
         <div className="app">
           <TopBar />
           <main className="dashboard">
-            <div className="main-column" />
+            <div className="main-column">
+              <ProjectsPanel />
+              <ProductsPanel />
+              <ContractsPanel />
+            </div>
             <aside className="side-column">
+              <StaffPanel />
               <EventLog />
             </aside>
           </main>
@@ -40,6 +65,7 @@ export function App() {
       ) : (
         <NewGameScreen />
       )}
+      <ActiveModal />
       <Toast />
     </>
   );
