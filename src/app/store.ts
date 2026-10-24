@@ -23,6 +23,10 @@ interface GameStore {
   modal: Modal | null;
   /** The end-of-game summary was closed so the player can look at the final dashboard. */
   summaryDismissed: boolean;
+  /** Player option: pause at the start of every month. */
+  pauseMonthly: boolean;
+  /** Why the game last auto-paused, shown in a banner until the player resumes. */
+  pauseReason: string | null;
 
   startNewGame(companyName: string, seed?: number): void;
   loadGame(state: GameState): void;
@@ -36,6 +40,7 @@ interface GameStore {
   closeModal(): void;
   showToast(text: string | null): void;
   setSummaryDismissed(v: boolean): void;
+  setPauseMonthly(v: boolean): void;
 }
 
 function randomSeed(): number {
@@ -50,14 +55,16 @@ export const useGame = create<GameStore>((set, get) => ({
   toast: null,
   modal: null,
   summaryDismissed: false,
+  pauseMonthly: false,
+  pauseReason: null,
 
   startNewGame(companyName, seed = randomSeed()) {
     const game = newGame({ companyName, seed });
-    set({ game, speed: 0, lastSeenSeq: game.nextLogSeq - 1, modal: null, toast: null, summaryDismissed: false });
+    set({ game, speed: 0, lastSeenSeq: game.nextLogSeq - 1, modal: null, toast: null, summaryDismissed: false, pauseReason: null });
   },
 
   loadGame(game) {
-    set({ game, speed: 0, lastSeenSeq: game.nextLogSeq - 1, modal: null, toast: null, summaryDismissed: false });
+    set({ game, speed: 0, lastSeenSeq: game.nextLogSeq - 1, modal: null, toast: null, summaryDismissed: false, pauseReason: null });
   },
 
   quitToMenu() {
@@ -65,30 +72,32 @@ export const useGame = create<GameStore>((set, get) => ({
   },
 
   tick() {
-    const { game, lastSeenSeq } = get();
+    const { game, lastSeenSeq, pauseMonthly } = get();
     if (!game || game.status !== 'playing') return;
     const next = step(game);
-    const important = next.log.some((e) => e.important && e.seq > lastSeenSeq);
+    const important = next.log.filter((e) => e.important && e.seq > lastSeenSeq);
     const ended = next.status !== 'playing';
+    const monthStart = isMonthStart(next.week);
+    const pause = important.length > 0 || ended || (pauseMonthly && monthStart);
     set({
       game: next,
       lastSeenSeq: next.nextLogSeq - 1,
-      ...(important || ended ? { speed: 0 as Speed } : {}),
+      ...(pause ? { speed: 0 as Speed, pauseReason: important.at(-1)?.text ?? (ended ? null : 'New month.') } : {}),
     });
-    if (isMonthStart(next.week) || ended) {
+    if (monthStart || ended) {
       writeSlot('auto', next).catch(() => set({ toast: 'Autosave failed: browser storage is unavailable.' }));
     }
   },
 
   setSpeed(speed) {
     if (speed === 0) set({ speed });
-    else set({ speed, resumeSpeed: speed });
+    else set({ speed, resumeSpeed: speed, pauseReason: null });
   },
 
   togglePause() {
     const { speed, resumeSpeed, game } = get();
     if (!game || game.status !== 'playing') return;
-    set({ speed: speed === 0 ? resumeSpeed : 0 });
+    set(speed === 0 ? { speed: resumeSpeed, pauseReason: null } : { speed: 0 });
   },
 
   dispatch(cmd) {
@@ -114,5 +123,8 @@ export const useGame = create<GameStore>((set, get) => ({
   },
   setSummaryDismissed(summaryDismissed) {
     set({ summaryDismissed });
+  },
+  setPauseMonthly(pauseMonthly) {
+    set({ pauseMonthly });
   },
 }));

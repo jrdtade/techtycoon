@@ -7,6 +7,7 @@ import { SavesModal } from './components/SavesModal';
 import { SummaryScreen } from './components/SummaryScreen';
 import { HireModal } from './components/HireModal';
 import { LaunchModal } from './components/LaunchModal';
+import { MarketPanel } from './components/MarketPanel';
 import { NewGameScreen } from './components/NewGameScreen';
 import { NewProjectModal } from './components/NewProjectModal';
 import { ProductsPanel } from './components/ProductsPanel';
@@ -15,6 +16,24 @@ import { StaffPanel } from './components/StaffPanel';
 import { TopBar } from './components/TopBar';
 import { startGameLoop } from './gameLoop';
 import { useGame } from './store';
+
+function PauseBanner() {
+  const reason = useGame((s) => s.pauseReason);
+  const speed = useGame((s) => s.speed);
+  const togglePause = useGame((s) => s.togglePause);
+  const playing = useGame((s) => s.game?.status === 'playing');
+  if (!reason || speed !== 0 || !playing) return null;
+  return (
+    <div className="pause-banner">
+      <span>
+        <strong>Paused:</strong> {reason}
+      </span>
+      <button className="small" onClick={togglePause}>
+        Resume (Space)
+      </button>
+    </div>
+  );
+}
 
 function Toast() {
   const toast = useGame((s) => s.toast);
@@ -60,16 +79,20 @@ export function App() {
       {hasGame ? (
         <div className="app">
           <TopBar />
+          <PauseBanner />
           <main className="dashboard">
             <div className="main-column">
               <ProjectsPanel />
               <ProductsPanel />
-              <ContractsPanel />
+              <div className="two-col">
+                <ContractsPanel />
+                <MarketPanel />
+              </div>
             </div>
             <aside className="side-column">
               <StaffPanel />
-              <FinancePanel />
               <EventLog />
+              <FinancePanel />
             </aside>
           </main>
         </div>

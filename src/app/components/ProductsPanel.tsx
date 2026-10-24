@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { expectedWeeklyUnits, getProductType, getSegment } from '../../sim';
 import { int, money } from '../format';
+import { Sparkline } from './Sparkline';
 import { useGame } from '../store';
 
 function NumberCell(props: { value: number; onCommit: (v: number) => void; step: number }) {
@@ -26,23 +27,39 @@ function NumberCell(props: { value: number; onCommit: (v: number) => void; step:
   );
 }
 
+const LIMIT = 10;
+
 export function ProductsPanel() {
   const game = useGame((s) => s.game)!;
   const dispatch = useGame((s) => s.dispatch);
   const [showRetired, setShowRetired] = useState(false);
-  const onSale = game.products.filter((p) => p.status === 'onSale');
-  const retired = game.products.filter((p) => p.status === 'retired');
+  const [showAll, setShowAll] = useState(false);
   const expected = expectedWeeklyUnits(game);
+  const weeklyRevenue = (id: string, price: number) => (expected.get(id) ?? 0) * price;
+  const allOnSale = game.products
+    .filter((p) => p.status === 'onSale')
+    .sort((a, b) => weeklyRevenue(b.id, b.price) - weeklyRevenue(a.id, a.price));
+  const onSale = showAll ? allOnSale : allOnSale.slice(0, LIMIT);
+  const retired = game.products.filter((p) => p.status === 'retired').reverse();
 
   return (
     <section className="panel">
       <div className="panel-header">
-        <h2>Products on sale</h2>
-        {retired.length > 0 && (
-          <button className="small" onClick={() => setShowRetired(!showRetired)}>
-            {showRetired ? 'Hide' : 'Show'} {retired.length} retired
-          </button>
-        )}
+        <h2>
+          Products on sale ({allOnSale.length})
+        </h2>
+        <span className="header-actions">
+          {allOnSale.length > LIMIT && (
+            <button className="small" onClick={() => setShowAll(!showAll)}>
+              {showAll ? `Top ${LIMIT}` : `Show all ${allOnSale.length}`}
+            </button>
+          )}
+          {retired.length > 0 && (
+            <button className="small" onClick={() => setShowRetired(!showRetired)}>
+              {showRetired ? 'Hide' : 'Show'} {retired.length} retired
+            </button>
+          )}
+        </span>
       </div>
       {onSale.length === 0 ? (
         <div className="empty">No products on sale yet.</div>
@@ -55,6 +72,7 @@ export function ProductsPanel() {
               <th className="num">Price</th>
               <th className="num">Marketing/wk</th>
               <th className="num" title="Expected units per week right now">Units/wk</th>
+              <th title="Weekly units, last 26 weeks">Trend</th>
               <th className="num">Units sold</th>
               <th className="num">Revenue</th>
               <th />
@@ -77,6 +95,9 @@ export function ProductsPanel() {
                   <NumberCell value={p.marketingWeekly} step={50} onCommit={(v) => dispatch({ type: 'setMarketing', productId: p.id, weekly: v })} />
                 </td>
                 <td className="num">{(expected.get(p.id) ?? 0).toFixed((expected.get(p.id) ?? 0) < 10 ? 2 : 0)}</td>
+                <td className="trend">
+                  <Sparkline values={p.recentWeeklyUnits} />
+                </td>
                 <td className="num">{int(p.unitsSold)}</td>
                 <td className="num">{money(p.revenue)}</td>
                 <td>
@@ -95,7 +116,7 @@ export function ProductsPanel() {
       {showRetired && retired.length > 0 && (
         <table className="table retired">
           <tbody>
-            {retired.map((p) => (
+            {retired.slice(0, showAll ? undefined : 20).map((p) => (
               <tr key={p.id}>
                 <td>{p.name}</td>
                 <td className="muted">{getSegment(p.segmentId).name}</td>

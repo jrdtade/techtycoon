@@ -18,9 +18,11 @@ export {
   baselineAppeal,
   priceFactor,
   previewLaunch,
+  segmentOverview,
+  effectiveQuality,
   lifecycleFactor,
 } from './systems/market';
-export type { LaunchPreview, AppealBreakdown } from './systems/market';
+export type { LaunchPreview, AppealBreakdown, SegmentOverview } from './systems/market';
 export { focusShares, teamProgress, weeksRemaining, workRequiredFor, projectTeam } from './systems/development';
 export { ledgerIncome, ledgerExpenses } from './systems/finance';
 export { askingSalary, hireFee, severance } from './systems/staff';

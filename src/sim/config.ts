@@ -107,7 +107,7 @@ export const CONFIG = {
     severanceWeeks: 4,
     officeRentPerEmployeeWeekly: 25,
     /** Weekly skill growth while working = rate × (1 − skill/100). */
-    skillGrowthPerWeek: 0.3,
+    skillGrowthPerWeek: 0.15,
     contractSkillGrowthFactor: 0.5,
     skillMax: 100,
   },

@@ -1,6 +1,7 @@
 import { CONFIG } from '../config';
 import { fractionalYear } from '../calendar';
-import { getProductType, getSegment, getTech } from '../content';
+import { SEGMENTS } from '../../data';
+import { getProductType, getSegment, getTech, isSegmentOpen } from '../content';
 import type { Rng } from '../rng';
 import type { GameState, Product, ProductTypeId, SegmentId, Week } from '../types';
 import { addLog, clamp, pushCapped } from '../util';
@@ -214,4 +215,41 @@ export function previewLaunch(state: GameState, projectId: string, price: number
   const revenue = units * probe.price;
   const profit = revenue - units * getSegment(project.segmentId).unitCost - probe.marketingWeekly;
   return { ...q, weeklyUnits: units, weeklyRevenue: revenue, weeklyProfit: profit };
+}
+
+export interface SegmentOverview {
+  id: SegmentId;
+  name: string;
+  description: string;
+  open: boolean;
+  /** For a closed segment: what opens it, and when. */
+  opensWith: string | null;
+  buyers: number;
+  /** Software purchases per week across all categories. */
+  weeklyDemand: number;
+  /** Year-on-year growth of the buyer base. */
+  growth: number;
+  /** Active era modifier on demand (1 = none). */
+  modifier: number;
+  referencePrice: number;
+}
+
+export function segmentOverview(state: GameState): SegmentOverview[] {
+  const year = fractionalYear(state.week);
+  return SEGMENTS.map((seg) => {
+    const open = isSegmentOpen(state, seg.id);
+    const tech = seg.requiresTech ? getTech(seg.requiresTech) : null;
+    return {
+      id: seg.id,
+      name: seg.name,
+      description: seg.description,
+      open,
+      opensWith: open || !tech ? null : tech.name,
+      buyers: segmentBuyers(seg.id, year),
+      weeklyDemand: segmentWeeklyDemand(state, seg.id),
+      growth: segmentBuyers(seg.id, year) / segmentBuyers(seg.id, year - 1) - 1,
+      modifier: demandMultiplier(state, seg.id),
+      referencePrice: seg.referencePrice,
+    };
+  });
 }

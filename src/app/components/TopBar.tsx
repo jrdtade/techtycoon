@@ -1,4 +1,4 @@
-import { formatDate } from '../../sim';
+import { formatDate, ledgerExpenses, ledgerIncome } from '../../sim';
 import { money } from '../format';
 import type { Speed } from '../settings';
 import { useGame } from '../store';
@@ -15,16 +15,27 @@ export function TopBar() {
   const speed = useGame((s) => s.speed);
   const setSpeed = useGame((s) => s.setSpeed);
   const openModal = useGame((s) => s.openModal);
+  const pauseMonthly = useGame((s) => s.pauseMonthly);
+  const setPauseMonthly = useGame((s) => s.setPauseMonthly);
   const playing = game.status === 'playing';
+  const net = ledgerIncome(game.finance.lastWeek) - ledgerExpenses(game.finance.lastWeek);
 
   return (
     <header className="topbar">
       <div className="topbar-company">{game.company.name}</div>
       <div className="topbar-date">{formatDate(game.week)}</div>
       <div className={`topbar-cash ${game.company.cash < 0 ? 'negative' : ''}`}>{money(game.company.cash)}</div>
+      <div className={`topbar-net ${net < 0 ? 'negative' : 'positive'}`} title="Net cash flow last week">
+        {net >= 0 ? '+' : ''}
+        {money(net)}/wk
+      </div>
       <div className="topbar-rep" title="Reputation">
         ★ {Math.round(game.company.reputation)}
       </div>
+      <label className="topbar-option" title="Pause at the start of every month">
+        <input type="checkbox" checked={pauseMonthly} onChange={(e) => setPauseMonthly(e.target.checked)} />
+        Pause monthly
+      </label>
       <div className="speed-controls">
         {SPEEDS.map((s) => (
           <button

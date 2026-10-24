@@ -38,6 +38,7 @@ export function StaffPanel() {
           Hire…
         </button>
       </div>
+      <div className="scroll-box">
       <table className="table compact staff-table">
         <thead>
           <tr>
@@ -77,6 +78,7 @@ export function StaffPanel() {
           ))}
         </tbody>
       </table>
+      </div>
     </section>
   );
 }
