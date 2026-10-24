@@ -3,6 +3,7 @@ import { ContractsPanel } from './components/ContractsPanel';
 import { EventLog } from './components/EventLog';
 import { FinancePanel } from './components/FinancePanel';
 import { ReportsModal } from './components/ReportsModal';
+import { SavesModal } from './components/SavesModal';
 import { SummaryScreen } from './components/SummaryScreen';
 import { HireModal } from './components/HireModal';
 import { LaunchModal } from './components/LaunchModal';
@@ -34,6 +35,7 @@ function Toast() {
 function ActiveModal() {
   const modal = useGame((s) => s.modal);
   const hasGame = useGame((s) => s.game !== null);
+  if (modal?.kind === 'saves') return <SavesModal />;
   if (!modal || !hasGame) return null;
   switch (modal.kind) {
     case 'newProject':

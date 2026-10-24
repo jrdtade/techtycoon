@@ -177,3 +177,4 @@ label.check { flex-direction: row; align-items: center; gap: 6px; font-weight: 4
 .summary-rank { font-size: 22px; font-weight: 700; margin: 0; }
 .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
 .stat { display: flex; flex-direction: column; gap: 2px; background: #f6f7f9; border-radius: var(--radius); padding: 8px 10px; }
+.slot-actions { display: flex; gap: 6px; justify-content: flex-end; }

@@ -26,3 +26,5 @@ export { ledgerIncome, ledgerExpenses } from './systems/finance';
 export { askingSalary, hireFee, severance } from './systems/staff';
 export { summarize } from './summary';
 export type { GameSummary } from './summary';
+export { createSave, saveToJson, loadSave, migrateState, SAVE_FORMAT } from './save';
+export type { SaveFile, LoadResult } from './save';

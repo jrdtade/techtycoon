@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { dispatch as simDispatch, newGame, step } from '../sim';
+import { writeSlot } from '../persistence/saveStore';
+import { dispatch as simDispatch, isMonthStart, newGame, step } from '../sim';
 import type { Command, GameState } from '../sim';
 import type { Speed } from './settings';
 
@@ -74,6 +75,9 @@ export const useGame = create<GameStore>((set, get) => ({
       lastSeenSeq: next.nextLogSeq - 1,
       ...(important || ended ? { speed: 0 as Speed } : {}),
     });
+    if (isMonthStart(next.week) || ended) {
+      writeSlot('auto', next).catch(() => set({ toast: 'Autosave failed: browser storage is unavailable.' }));
+    }
   },
 
   setSpeed(speed) {
