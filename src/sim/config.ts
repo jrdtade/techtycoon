@@ -63,12 +63,12 @@ export const CONFIG = {
 
   market: {
     /** The "everyone else" baseline appeal is per segment (src/data/segments.ts). It grows as categories mature: × (1 + growth)^(years since segment opened). */
-    baselineAppealGrowthPerYear: 0.04,
+    baselineAppealGrowthPerYear: 0.1,
     qualityExponent: 1.5,
     priceFactorMin: 0.05,
     priceFactorMax: 3,
-    /** repFactor = reputationBase + reputation/100. */
-    reputationBase: 0.5,
+    /** repFactor = reputationBase + reputation/100 (0.6–1.6). */
+    reputationBase: 0.6,
     /** marketingFactor = 1 + marketingStrength × ln(1 + spend / reference). */
     marketingStrength: 0.3,
     launchRampWeeks: 4,
@@ -81,11 +81,12 @@ export const CONFIG = {
   reputation: {
     min: 0,
     max: 100,
-    /** Δrep at launch = (reviewScore − 5) × launchDeltaPerPoint. */
-    launchDeltaPerPoint: 4,
+    /** At launch, reputation moves this fraction of the way toward the review's target (see below). */
+    launchPull: 0.3,
     /** Weekly drift toward the target set by products on sale. */
     driftPerWeek: 0.01,
-    /** Drift target = (average review − targetReviewOffset) × targetPerReviewPoint. A 6.9 review → ~41, 9 → 70. */
+    /** Target for a review = (review − targetReviewOffset) × targetPerReviewPoint. 6.9 → ~41, 9 → 70, 10 → 84.
+     *  Weekly drift uses the average review of products on sale. */
     targetReviewOffset: 4,
     targetPerReviewPoint: 14,
     /** Target when nothing is on sale. */
@@ -140,7 +141,7 @@ export const CONFIG = {
       { min: 1_000, title: 'Small Software House' },
       { min: 5_000, title: 'Regional Player' },
       { min: 25_000, title: 'Industry Contender' },
-      { min: 100_000, title: 'Valley Titan' },
+      { min: 250_000, title: 'Valley Titan' },
     ],
   },
 

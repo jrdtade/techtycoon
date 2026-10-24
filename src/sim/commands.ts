@@ -5,7 +5,7 @@ import { spend } from './systems/finance';
 import { hireFee, severance } from './systems/staff';
 import { workRequiredFor } from './systems/development';
 import { computeQuality, retireProduct } from './systems/market';
-import { changeReputation } from './systems/reputation';
+import { applyLaunchReputation } from './systems/reputation';
 import type { Command, DispatchResult, Employee, Focus, GameState, Id } from './types';
 import { addLog, cloneState, fmtMoney, newId } from './util';
 
@@ -143,12 +143,12 @@ const handlers: { [K in Command['type']]?: Handler<Extract<Command, { type: K }>
     state.projects = state.projects.filter((x) => x.id !== project.id);
 
     state.stats.productsLaunched += 1;
+    const before = state.company.reputation;
     if (q.reviewScore > state.stats.bestReview) {
       state.stats.bestReview = q.reviewScore;
       state.stats.bestProductName = name;
     }
-    const before = state.company.reputation;
-    changeReputation(state, (q.reviewScore - 5) * CONFIG.reputation.launchDeltaPerPoint);
+    applyLaunchReputation(state, q.reviewScore);
     const repDelta = state.company.reputation - before;
     const verdict =
       q.reviewScore >= 8.5 ? 'Critics rave' : q.reviewScore >= 7 ? 'Reviews are warm' : q.reviewScore >= 5 ? 'Reviews are mixed' : 'Reviewers are brutal';
