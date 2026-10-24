@@ -1,0 +1,54 @@
+import { END_WEEK, fractionalYear, isMonthStart } from './calendar';
+import { Rng } from './rng';
+import { checkMilestones, runScheduledEvents } from './systems/events';
+import { closeMonth, emptyLedger, payWeeklyCosts } from './systems/finance';
+import { simulateSales } from './systems/market';
+import { driftReputation } from './systems/reputation';
+import type { GameState } from './types';
+import { addLog, cloneState, inflation } from './util';
+
+/**
+ * Advances the game by exactly one week. Pure: returns a new state and never mutates `prev`.
+ * The order of systems below is part of the deterministic contract.
+ */
+export function step(prev: GameState): GameState {
+  if (prev.status !== 'playing') return prev;
+  const state = cloneState(prev);
+  const rng = new Rng(state.rng);
+  const infl = inflation(fractionalYear(state.week));
+
+  state.finance.lastWeek = emptyLedger();
+
+  // 1. this week's work and sales
+  simulateSales(state, rng);
+  payWeeklyCosts(state, infl);
+  driftReputation(state);
+
+  // 2. advance the calendar
+  state.week += 1;
+  if (isMonthStart(state.week)) {
+    closeMonth(state);
+  }
+
+  // 3. scheduled history and milestones
+  if (state.status === 'playing') {
+    runScheduledEvents(state);
+    checkMilestones(state);
+  }
+
+  state.company.peakCash = Math.max(state.company.peakCash, state.company.cash);
+  state.stats.peakEmployees = Math.max(state.stats.peakEmployees, state.employees.length);
+
+  if (state.status === 'playing' && state.week >= END_WEEK) {
+    state.status = 'finished';
+    addLog(state, 'info', 'The year 1985 draws to a close. Time to look back on what you built.', true);
+  }
+  return state;
+}
+
+/** Runs `weeks` ticks (stops early if the game ends). */
+export function stepMany(state: GameState, weeks: number): GameState {
+  let s = state;
+  for (let i = 0; i < weeks && s.status === 'playing'; i++) s = step(s);
+  return s;
+}
