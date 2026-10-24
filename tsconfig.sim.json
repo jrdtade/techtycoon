@@ -1,0 +1,11 @@
+{
+  // Compiles src/sim and src/data WITHOUT the DOM lib or any @types,
+  // proving the simulation is headless (architecture rule 1).
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "jsx": "preserve",
+    "types": []
+  },
+  "include": ["src/sim", "src/data"]
+}
